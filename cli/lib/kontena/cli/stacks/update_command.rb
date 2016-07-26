@@ -10,18 +10,15 @@ module Kontena::Cli::Stacks
 
     def execute
       require_api_url
-      require_token
+      token = require_token
       require_config_file(filename)
-      @stack = stack_from_yaml(filename)
+      stack = stack_from_yaml(filename)
 
-      update_stack
+      update_stack(token, stack)
     end
 
-    private
-
-    def update_stack
-      client(token).put("stacks/#{current_grid}/#{@stack['name']}", @stack)
+    def update_stack(token, stack)
+      client(token).put("stacks/#{current_grid}/#{stack['name']}", stack)
     end
-
   end
 end
