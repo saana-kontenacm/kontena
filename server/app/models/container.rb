@@ -10,7 +10,11 @@ class Container
   field :exec_driver, type: String
   field :image, type: String
   field :image_version, type: String
+  field :cmd, type: Array, default: []
   field :env, type: Array, default: []
+  field :labels, type: Hash, default: {}
+  field :hostname, type: String
+  field :domainname, type: String
   field :network_settings, type: Hash, default: {}
   field :state, type: Hash, default: {}
   field :finished_at, type: Time
@@ -41,6 +45,7 @@ class Container
   index({ container_id: 1 })
   index({ state: 1 })
   index({ name: 1 })
+  index({ labels: 1 })
 
   default_scope -> { where(deleted_at: nil, container_type: 'container') }
   scope :deleted, -> { where(deleted_at: {'$ne' => nil}) }
@@ -119,5 +124,29 @@ class Container
 
   def up_to_date?
     self.image_version == self.grid_service.image.image_id && self.created_at > self.grid_service.updated_at
+  end
+
+  # @return [String]
+  def instance_name
+    stack = self.labels['io;kontena;stack;name'] || 'default'.freeze
+    service = self.labels['io;kontena;service;name']
+    instance = self.labels['io;kontena;service;instance_number'] || '0'.freeze
+
+    name = ''
+    name << "#{stack}-" if stack
+    name << "#{service}-" if service
+    name << "#{instance}"
+
+    name
+  end
+
+  # @param [GridService] service
+  # @param [Integer] instance_number
+  def self.service_instance(service, instance_number)
+    match = {
+      :'labels.io;kontena;service;id' => service.id.to_s,
+      :'labels.io;kontena;service;instance_number' => instance_number
+    }
+    where(match)
   end
 end
