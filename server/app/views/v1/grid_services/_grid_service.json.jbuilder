@@ -21,7 +21,12 @@ json.volumes_from grid_service.volumes_from
 json.cap_add grid_service.cap_add
 json.cap_drop grid_service.cap_drop
 json.state grid_service.state
-json.grid_id grid_service.grid_id.to_s
+json.grid do
+  json.id grid_service.grid.name
+end
+json.stack do
+  json.id (grid_service.stack.name || 'default'.freeze)
+end
 json.links grid_service.grid_service_links.map{|s| {alias: s.alias, grid_service_id: s.linked_grid_service.to_path }}
 json.log_driver grid_service.log_driver
 json.log_opts grid_service.log_opts
@@ -30,7 +35,7 @@ json.deploy_opts grid_service.deploy_opts
 json.pid grid_service.pid
 json.instances do
   json.total grid_service.containers.count
-  json.running grid_service.containers.where('state.running' => true).count
+  json.running grid_service.containers.where(:'state.running' => true).count
 end
 json.hooks grid_service.hooks.as_json(only: [:name, :type, :cmd, :oneshot])
 json.revision grid_service.revision

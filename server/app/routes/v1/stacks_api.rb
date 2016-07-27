@@ -19,22 +19,6 @@ module V1
         halt_request(404, {error: 'Not found'}) unless @grid
       end
 
-      def create_stack(data)
-        data[:grid] = @grid
-        data[:current_user] = current_user
-        outcome = Stacks::Create.run(data)
-
-        if outcome.success?
-          @stack = outcome.result
-          audit_event(request, @grid, @stack, 'create')
-          response.status = 201
-          render('stacks/show')
-        else
-          response.status = 422
-          {error: outcome.errors.message}
-        end
-      end
-
       def update_stack(stack, data)
         data[:grid] = @grid
         data[:current_user] = current_user
@@ -80,67 +64,40 @@ module V1
       end
 
       # /v1/stacks/:grid/
-      r.on ':grid' do |grid|
-        
+      r.on ':grid/:name' do |grid, name|
+
         load_grid(grid)
+        @stack = @grid.stacks.find_by(name: name)
+        unless @stack
+          halt_request(404)
+        end
 
         r.post do
-          r.is do
-            data = parse_json_body
-            create_stack(data)
-          end
-
-          r.on ':name/deploy' do |name|
-            @stack = @grid.stacks.find_by(name: name)
-            if @stack
-              deploy_stack(@stack)
-            else
-              response.status = 404
-            end
+          r.on ':deploy' do
+            deploy_stack(@stack)
           end
         end
 
         r.put do
           # PUT /v1/stacks/:grid/:name
-          r.on ':name' do |name|
-            @stack = @grid.stacks.find_by(name: name)
+          r.is do
             data = parse_json_body
-            if @stack
-              update_stack(@stack, data)
-            else
-              response.status = 404
-            end
+            update_stack(@stack, data)
           end
         end
 
-        # GET /v1/stacks/:grid/
+        # GET /v1/stacks/:grid/:name
         r.get do
           r.is do
-            @stacks = @grid.stacks
-            render('stacks/index')
-          end
-          # GET /v1/stacks/:grid/:name
-          r.on ':name' do |name|
-            @stack = @grid.stacks.find_by(name: name)
-            if @stack
-              render('stacks/show')
-            else
-              response.status = 404
-            end
+            render('stacks/show')
           end
         end
 
         r.delete do
-          r.on ':name' do |name|
-            @stack = @grid.stacks.find_by(name: name)
-            if @stack
-              delete_stack(@stack)
-            else
-              response.status = 404
-            end
+          r.is do
+            delete_stack(@stack)
           end
         end
-
       end
     end
   end

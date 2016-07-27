@@ -72,13 +72,13 @@ describe '/v1/stacks' do
       get "/v1/stacks/#{grid.name}/#{stack.name}", nil, request_headers
       expect(response.status).to eq(200)
       expect(json_response.keys.sort).to eq(%w(
-        id created_at updated_at name version grid_services state
+        id created_at updated_at name version services state
       ).sort)
-      expect(json_response['grid_services'].size).to eq(2)
-      expect(json_response['grid_services'][0].keys.sort).to eq(%w(
+      expect(json_response['services'].size).to eq(2)
+      expect(json_response['services'][0].keys).to include(%w(
         id name
-      ).sort)
-      
+      ))
+
     end
 
     it 'returns 404 for unknown stack' do
@@ -96,70 +96,12 @@ describe '/v1/stacks' do
       expect(response.status).to eq(200)
       expect(json_response['stacks'].size).to eq(2)
       expect(json_response['stacks'][0].keys.sort).to eq(%w(
-        id created_at updated_at name version grid_services state
+        id created_at updated_at name version services state
       ).sort)
-      expect(json_response['stacks'][0]['grid_services'].size).to eq(2)
-      expect(json_response['stacks'][0]['grid_services'][0].keys.sort).to eq(%w(
+      expect(json_response['stacks'][0]['services'].size).to eq(2)
+      expect(json_response['stacks'][0]['services'][0].keys).to include(%w(
         id name
-      ).sort)
-    end
-
-  end
-
-  describe 'POST /' do
-    it 'creates new empty stack' do
-      expect {
-        post "/v1/stacks/#{grid.name}", {name: 'test-stack'}.to_json, request_headers
-        expect(response.status).to eq(201)
-        expect(json_response.keys.sort).to eq(%w(
-          id created_at updated_at name version grid_services state
-        ).sort)
-      }.to change{ grid.reload.stacks.count }.by(1)
-    end
-
-    it 'creates audit event' do
-      expect {
-        post "/v1/stacks/#{grid.name}", {name: 'test-stack'}.to_json, request_headers
-        expect(response.status).to eq(201)
-        expect(json_response.keys.sort).to eq(%w(
-          id created_at updated_at name version grid_services state
-        ).sort)
-      }.to change{ AuditLog.count }.by(1)
-    end
-
-    it 'creates new stack with services' do
-      data = {
-        name: 'test-stack',
-        services: [
-          {
-            name: 'app',
-            image: 'my/app:latest',
-            stateful: false
-          }
-        ]
-      }
-      expect {
-        post "/v1/stacks/#{grid.name}", data.to_json, request_headers
-        expect(response.status).to eq(201)
-        expect(json_response['grid_services'].size).to eq(1)
-      }.to change{ grid.reload.stacks.count }.by(1)
-    end
-
-    it 'return 422 for service validation failure' do
-      data = {
-        name: 'test-stack',
-        services: [
-          {
-            name: 'app',
-            image: 'my/app:latest'
-            # stateful parameter missing
-          }
-        ]
-      }
-      expect {
-        post "/v1/stacks/#{grid.name}", data.to_json, request_headers
-        expect(response.status).to eq(422)
-      }.to change{ grid.reload.stacks.count }.by(0)
+      ))
     end
 
   end
@@ -182,7 +124,7 @@ describe '/v1/stacks' do
       expect(Stacks::Update).to receive(:run).and_return(outcome)
       expect {
         put "/v1/stacks/#{grid.name}/#{stack.name}", data.to_json, request_headers
-        expect(response.status).to eq(200)  
+        expect(response.status).to eq(200)
       }.to change{ AuditLog.count }.by(1)
     end
 
@@ -198,11 +140,11 @@ describe '/v1/stacks' do
       outcome = spy
       allow(outcome).to receive(:success?).and_return(true)
       allow(Stacks::Delete).to receive(:run).and_return(outcome)
-      
+
       expect {
         delete "/v1/stacks/#{grid.name}/#{stack.name}", nil, request_headers
-        expect(response.status).to eq(200)  
-      }.to change{ AuditLog.count }.by(1)      
+        expect(response.status).to eq(200)
+      }.to change{ AuditLog.count }.by(1)
     end
 
     it 'return 422 for stack already terminated' do
@@ -239,5 +181,4 @@ describe '/v1/stacks' do
       }.to change{AuditLog.count}.by(1)
     end
   end
-
 end
