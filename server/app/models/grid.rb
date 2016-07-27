@@ -35,6 +35,7 @@ class Grid
   index({ token: 1 }, { unique: true })
 
   before_create :set_token
+  after_create :create_default_stack
 
   # @return [String]
   def to_path
@@ -87,5 +88,9 @@ class Grid
 
   def set_token
     self.token = SecureRandom.base64(64)
+  end
+
+  def create_default_stack
+    self.stacks.create(name: 'default')
   end
 end
