@@ -142,7 +142,7 @@ describe Container do
           labels: {
             "io;kontena;service;id" => grid_service.id.to_s,
             "io;kontena;stack;name" => "default",
-            "io;kontena;service;instance_number" => i,
+            "io;kontena;service;instance_number" => i.to_s,
           }
         )
       end

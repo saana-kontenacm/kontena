@@ -140,12 +140,17 @@ class Container
     name
   end
 
+  # @return [Integer]
+  def instance_number
+    self.labels['io;kontena;service;instance_number'].to_i
+  end
+
   # @param [GridService] service
   # @param [Integer] instance_number
   def self.service_instance(service, instance_number)
     match = {
       :'labels.io;kontena;service;id' => service.id.to_s,
-      :'labels.io;kontena;service;instance_number' => instance_number
+      :'labels.io;kontena;service;instance_number' => instance_number.to_s
     }
     where(match)
   end

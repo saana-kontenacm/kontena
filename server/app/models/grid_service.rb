@@ -66,12 +66,8 @@ class GridService
   end
 
   # @return [String]
-  def agent_service_name
-    if self.stack.name == 'default'.freeze
-      self.name
-    else
-      "#{self.stack.name}-#{self.name}"
-    end
+  def name_with_stack
+    "#{self.stack.name}-#{self.name}"
   end
 
   # @return [Boolean]

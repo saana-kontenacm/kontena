@@ -193,15 +193,9 @@ describe GridService do
     end
   end
 
-  describe '#agent_service_name' do
-    it 'returns short version for default stack' do
-      expect(grid_service.agent_service_name).to eq(grid_service.name)
-    end
-
-    it 'returns short longer version for non-default stack' do
-      stack = grid.stacks.create(name: 'custom')
-      grid_service.stack = stack
-      expect(grid_service.agent_service_name).to eq("#{stack.name}-#{grid_service.name}")
+  describe '#name_with_stack' do
+    it 'returns service name with stack' do
+      expect(grid_service.name_with_stack).to include("#{grid_service.stack.name}-")
     end
   end
 end

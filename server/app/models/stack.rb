@@ -5,7 +5,6 @@ class Stack
 
   field :name, type: String
   field :version, type: String, default: '1'
-  enum :state, [:initialized, :deployed, :terminated]
 
   belongs_to :grid
 
@@ -27,4 +26,12 @@ class Stack
     self.version
   end
 
+  def state
+    return :initialized if self.grid_services.all?{ |s| s.initialized? }
+    return :deploying if self.grid_services.any?{ |s| s.deploying? }
+    return :stopped if self.grid_services.all?{ |s| s.stopped? }
+    return :running if self.grid_services.all?{ |s| s.running? }
+
+    :partially_running
+  end
 end
