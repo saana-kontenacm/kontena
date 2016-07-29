@@ -24,7 +24,7 @@ describe Kontena::Cli::Stacks::CreateCommand do
       allow(subject).to receive(:require_config_file).with('kontena.yml').and_return(true)
       allow(subject).to receive(:stack_from_yaml).with('kontena.yml').and_return(stack)
       expect(client).to receive(:post).with(
-        'stacks/test-grid', stack
+        'grids/test-grid/stacks', stack
       )
       subject.run([])
     end
@@ -39,7 +39,7 @@ describe Kontena::Cli::Stacks::CreateCommand do
       stack_b = stack
       stack_b[:name] = 'stack-b'
       expect(client).to receive(:post).with(
-        'stacks/test-grid', stack
+        'grids/test-grid/stacks', stack
       )
       subject.run(['--name', 'stack-b'])
     end

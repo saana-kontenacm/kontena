@@ -44,6 +44,7 @@ module Kontena
           service = get_service(token, service_id)
           grid = service['id'].split('/')[0]
           puts "#{service['id']}:"
+          puts "  stack: #{service['stack']['id'] }"
           puts "  status: #{service['state'] }"
           puts "  image: #{service['image']}"
           puts "  revision: #{service['revision']}"
@@ -58,7 +59,7 @@ module Kontena
           if service['deploy_opts']['interval']
             puts "    interval: #{service['deploy_opts']['interval']}"
           end
-          puts "  dns: #{service['name']}.#{grid}.kontena.local"
+          puts "  dns: #{service['dns']}"
 
           if service['affinity'].to_a.size > 0
             puts "  affinity: "
@@ -180,13 +181,15 @@ module Kontena
             puts "    interval: #{service['health_check']['interval']}"
             puts "    initial_delay: #{service['health_check']['initial_delay']}"
           end
-          
+
           if service['health_status']
             puts "  health status:"
             puts "    healthy: #{service['health_status']['healthy']}"
             puts "    total: #{service['health_status']['total']}"
           end
+        end
 
+        def show_service_instances(token, service_id)
           puts "  instances:"
           result = client(token).get("services/#{parse_service_id(service_id)}/containers")
           result['containers'].each do |container|
@@ -194,7 +197,7 @@ module Kontena
             puts "      rev: #{container['deploy_rev']}"
             puts "      service_rev: #{container['service_rev']}"
             puts "      node: #{container['node']['name'] rescue 'unknown'}"
-            puts "      dns: #{container['name']}.#{grid}.kontena.local"
+            puts "      dns: #{container['hostname']}.#{container['domainname']}"
             puts "      ip: #{container['overlay_cidr'].to_s.split('/')[0]}"
             puts "      public ip: #{container['node']['public_ip'] rescue 'unknown'}"
             if container['status'] == 'unknown'
@@ -205,6 +208,46 @@ module Kontena
             if container['state']['error'] && container['state']['error'] != ''
               puts "      reason: #{container['state']['error']}"
             end
+          end
+        end
+
+        def show_services(services)
+          titles = ['NAME', 'INSTANCES', 'STATEFUL', 'STATE', 'EXPOSED PORTS']
+          puts "%-60s %-10s %-8s %-10s %-50s" % titles
+          services.each do |service|
+            stateful = service['stateful'] ? 'yes' : 'no'
+            running = service['instances']['running']
+            desired = service['container_count']
+
+            ports = service['ports'].map{|p|
+              "#{p['ip']}:#{p['node_port']}->#{p['container_port']}/#{p['protocol']}"
+            }.join(", ")
+            if service['health_status']
+              healthy = service.dig('health_status', 'healthy')
+              total = service.dig('health_status', 'total')
+              health = :green
+              icon = '●'.freeze
+              if healthy == 0
+                icon = '○'.freeze
+                health = :red
+              elsif healthy > 0 && healthy < total
+                icon = '◍'.freeze
+                health = :yellow
+              end
+            else
+              icon = '◌'.freeze
+              health = :default
+            end
+
+            instances = "#{running} / #{desired}"
+            vars = [
+              "#{icon.colorize(health)} #{service.dig('stack', 'id')}/#{service['name']}",
+              instances,
+              stateful,
+              service['state'],
+              ports
+            ]
+            puts "%-74.74s %-10.10s %-8s %-10s %-50s" % vars
           end
         end
 
@@ -258,10 +301,13 @@ module Kontena
         # @param [String] service_id
         # @return [String]
         def parse_service_id(service_id)
-          if service_id.to_s.include?('/')
+          count = service_id.to_s.count('/')
+          if count == 2
             param = service_id
-          else
+          elsif count == 1
             param = "#{current_grid}/#{service_id}"
+          else
+            param = "#{current_grid}/default/#{service_id}"
           end
         end
 
@@ -282,7 +328,7 @@ module Kontena
               ip: ip,
               container_port: container_port,
               node_port: node_port,
-              protocol: protocol 
+              protocol: protocol
             }
           }
         end

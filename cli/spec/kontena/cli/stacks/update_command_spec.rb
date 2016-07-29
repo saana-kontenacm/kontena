@@ -8,12 +8,12 @@ describe Kontena::Cli::Stacks::UpdateCommand do
   describe '#execute' do
     it 'requires api url' do
       expect(subject).to receive(:require_api_url).once
-      subject.run([])
+      subject.run(['stack-name'])
     end
 
     it 'requires token' do
       expect(subject).to receive(:require_token).and_return(token)
-      subject.run([])
+      subject.run(['stack-name'])
     end
 
     it 'sends stack to master' do
@@ -26,7 +26,7 @@ describe Kontena::Cli::Stacks::UpdateCommand do
       expect(client).to receive(:put).with(
         'stacks/test-grid/stack-a', stack
       )
-      subject.run([])
+      subject.run(['stack-a'])
     end
 
     it 'allows to override stack name' do
@@ -41,7 +41,7 @@ describe Kontena::Cli::Stacks::UpdateCommand do
       expect(client).to receive(:put).with(
         'stacks/test-grid/stack-b', stack
       )
-      subject.run(['--name', 'stack-b'])
+      subject.run(['stack-b'])
     end
   end
 end

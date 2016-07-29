@@ -19,7 +19,7 @@ module Kontena::Cli::Stacks
     end
 
     def create_stack(stack)
-      client(token).post("stacks/#{current_grid}", stack)
+      client(token).post("grids/#{current_grid}/stacks", stack)
     end
   end
 end
