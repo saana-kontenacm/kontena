@@ -38,10 +38,10 @@ describe ContainerCleanupJob do
     it 'removes stale overlay_cidrs' do
       allocator.initialize_grid_subnet
       10.times do |i|
-        allocator.allocate_for_service_instance("app-#{i + 1}")
+        allocator.allocate_for_service_instance
       end
 
-      cidr = allocator.allocate_for_service_instance("app-n")
+      cidr = allocator.allocate_for_service_instance
       cidr.update_attribute(:reserved_at, 21.minutes.ago)
       expect {
         subject.cleanup_reserved_overlay_cidrs
