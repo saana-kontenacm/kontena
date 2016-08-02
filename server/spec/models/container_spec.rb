@@ -134,6 +134,18 @@ describe Container do
     end
   end
 
+  describe '#label' do
+    it 'returns label value if label exists' do
+      subject.labels = { 'io;kontena;service;name' => 'redis' }
+      expect(subject.label('io.kontena.service.name')).to eq('redis')
+    end
+
+    it 'returns nil if label does not exist' do
+      subject.labels = { 'io;kontena;service;name' => 'redis' }
+      expect(subject.label('io.kontena.service.id')).to be_nil
+    end
+  end
+
   describe '.service_instance' do
     it 'returns correct instance' do
       (1..3).each do |i|
