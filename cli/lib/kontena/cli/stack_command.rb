@@ -5,6 +5,7 @@ require_relative 'stacks/update_command'
 require_relative 'stacks/list_command'
 require_relative 'stacks/show_command'
 require_relative 'stacks/build_command'
+require_relative 'stacks/monitor_command'
 
 class Kontena::Cli::StackCommand < Clamp::Command
 
@@ -13,7 +14,8 @@ class Kontena::Cli::StackCommand < Clamp::Command
   subcommand ["ls", "list"], "List stacks", Kontena::Cli::Stacks::ListCommand
   subcommand "show", "Show stack details", Kontena::Cli::Stacks::ShowCommand
   subcommand "update", "Update stack", Kontena::Cli::Stacks::UpdateCommand
-  subcommand "deploy", "Deploy Kontena stack", Kontena::Cli::Stacks::DeployCommand
+  subcommand "deploy", "Deploy stack", Kontena::Cli::Stacks::DeployCommand
+  subcommand "monitor", "Monitor stack", Kontena::Cli::Stacks::MonitorCommand
   subcommand ["remove","rm"], "Remove stack", Kontena::Cli::Stacks::RemoveCommand
 
   def execute
