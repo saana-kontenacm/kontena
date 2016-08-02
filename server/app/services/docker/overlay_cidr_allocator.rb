@@ -10,14 +10,15 @@ module Docker
       @grid = grid
     end
 
-    # @param [String] service_instance_name
     # @return [OverlayCidr]
-    def allocate_for_service_instance(service_instance_name)
+    def allocate_for_service_instance
       overlay_cidr = nil
       tries = 0
       while overlay_cidr.nil? do
         begin
-          overlay_cidr = grid.overlay_cidrs.where(reserved_at: nil, container_id: nil).find_and_modify({:$set => {reserved_at: Time.now.utc}}, new: true)
+          overlay_cidr = grid.overlay_cidrs.where(
+              reserved_at: nil, container_id: nil
+            ).find_and_modify({:$set => {reserved_at: Time.now.utc}}, new: true)
           raise AllocationError.new('Cannot allocate ip') if overlay_cidr.nil?
         rescue Moped::Errors::OperationFailure
           tries += 1

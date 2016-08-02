@@ -12,7 +12,7 @@ module Kontena::Cli::Vpn
       require_api_url
       token = require_token
       preferred_node = node
-      
+
       vpn = client(token).get("services/#{current_grid}/vpn") rescue nil
       abort('Vpn already exists') if vpn
 
@@ -21,23 +21,27 @@ module Kontena::Cli::Vpn
       vpn_ip = node_vpn_ip(node)
       data = {
         name: 'vpn',
-        stateful: true,
-        image: 'kontena/openvpn:ethwe',
-        ports: [
-          {
-            container_port: '1194',
-            node_port: '1194',
-            protocol: 'udp'
-          }
-        ],
-        cap_add: ['NET_ADMIN'],
-        env: ["OVPN_SERVER_URL=udp://#{vpn_ip}:1194"],
-        affinity: ["node==#{node['name']}"]
+        services: [
+          name: 'server',
+          stateful: true,
+          image: 'kontena/openvpn:ethwe',
+          ports: [
+            {
+              container_port: '1194',
+              node_port: '1194',
+              protocol: 'udp'
+            }
+          ],
+          cap_add: ['NET_ADMIN'],
+          env: ["OVPN_SERVER_URL=udp://#{vpn_ip}:1194"],
+          affinity: ["node==#{node['name']}"]
+        ]
       }
-      client(token).post("grids/#{current_grid}/services", data)
-      client(token).post("services/#{current_grid}/vpn/deploy", {})
+      client(token).post("grids/#{current_grid}/stacks", data)
+      client(token).post("stacks/#{current_grid}/vpn/deploy", {})
       ShellSpinner "Deploying vpn service " do
-        sleep 1 until client(token).get("services/#{current_grid}/vpn")['state'] != 'deploying'
+        sleep 1 while client(token).get("stacks/#{current_grid}/vpn")['state'] == 'deploying'
+        sleep 1 while client(token).get("stacks/#{current_grid}/vpn")['state'] == 'running'
       end
       puts "OpenVPN service is now started (udp://#{vpn_ip}:1194)."
       puts "Use 'kontena vpn config' to fetch OpenVPN client config to your machine (it takes a while until config is ready)."
@@ -61,10 +65,10 @@ module Kontena::Cli::Vpn
     # @return [String]
     def node_vpn_ip(node)
       return ip unless ip.nil?
-      
+
       # vagrant
       if node['labels'] && node['labels'].include?('provider=vagrant')
-        node['private_ip'].to_s 
+        node['private_ip'].to_s
       else
         node['public_ip'].to_s.empty? ? node['private_ip'].to_s : node['public_ip'].to_s
       end

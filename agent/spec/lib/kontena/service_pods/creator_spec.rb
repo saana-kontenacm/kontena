@@ -4,11 +4,14 @@ describe Kontena::ServicePods::Creator do
 
   let(:data) do
     {
+      'service_id' => 'aa',
       'service_name' => 'redis',
       'instance_number' => 2,
       'deploy_rev' => Time.now.utc.to_s,
       'updated_at' => Time.now.utc.to_s,
       'labels' => {
+        'io.kontena.service.id' => 'aa',
+        'io.kontena.service.instance_number' => '2',
         'io.kontena.service.name' => 'redis-cache',
         'io.kontena.container.overlay_cidr' => '10.81.23.2/19'
       },
@@ -36,9 +39,8 @@ describe Kontena::ServicePods::Creator do
 
   describe '#get_container' do
     it 'gets container from docker' do
-      name = 'redis-2'
-      expect(Docker::Container).to receive(:get).with(name)
-      subject.get_container(name)
+      expect(Docker::Container).to receive(:all).and_return([])
+      subject.get_container('service_id', 2)
     end
   end
 

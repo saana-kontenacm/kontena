@@ -1,4 +1,4 @@
 module Docker
-
-  API_VERSION = '1.19'
+  remove_const :API_VERSION
+  API_VERSION = '1.21'.freeze
 end

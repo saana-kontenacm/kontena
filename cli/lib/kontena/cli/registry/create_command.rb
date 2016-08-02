@@ -87,19 +87,25 @@ module Kontena::Cli::Registry
       env << "REGISTRY_HTTP_SECRET=#{SecureRandom.hex(24)}"
 
       data = {
-          name: 'registry',
-          stateful: stateful,
-          container_count: instances,
-          image: "kontena/registry:#{REGISTRY_VERSION}",
-          volumes: ['/registry'],
-          env: env,
-          secrets: secrets,
-          affinity: affinity
+        name: 'registry',
+        services: [
+          {
+            name: 'api',
+            stateful: stateful,
+            container_count: instances,
+            image: "kontena/registry:#{REGISTRY_VERSION}",
+            volumes: ['/registry'],
+            env: env,
+            secrets: secrets,
+            affinity: affinity
+          }
+        ]
       }
-      client(token).post("grids/#{current_grid}/services", data)
-      client(token).post("services/#{current_grid}/registry/deploy", {})
+      client(token).post("grids/#{current_grid}/stacks", data)
+      client(token).post("stacks/#{current_grid}/registry/deploy", {})
       ShellSpinner "Deploying registry service " do
-        sleep 1 until client(token).get("services/#{current_grid}/registry")['state'] != 'deploying'
+        sleep 1 until client(token).get("stacks/#{current_grid}/registry")['state'] == 'deploying'
+        sleep 1 until client(token).get("stacks/#{current_grid}/registry")['state'] == 'running'
       end
       puts "\n"
       puts "Docker Registry #{REGISTRY_VERSION} is now running at registry.#{current_grid}.kontena.local."

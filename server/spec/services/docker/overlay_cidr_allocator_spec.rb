@@ -10,7 +10,7 @@ describe Docker::OverlayCidrAllocator do
       subject.initialize_grid_subnet
       expect(grid.overlay_cidrs.where(:reserved_at.ne => nil).count).to eq(0)
       10.times do |i|
-        subject.allocate_for_service_instance("app-#{i + 1}")
+        subject.allocate_for_service_instance
       end
       expect(grid.overlay_cidrs.where(:reserved_at.ne => nil).count).to eq(10)
     end
@@ -18,7 +18,7 @@ describe Docker::OverlayCidrAllocator do
     it 'raises error cannot allocate ip' do
       subject = described_class.new(empty_grid)
       expect {
-        subject.allocate_for_service_instance("app-1")
+        subject.allocate_for_service_instance
       }.to raise_error(Docker::OverlayCidrAllocator::AllocationError)
     end
   end

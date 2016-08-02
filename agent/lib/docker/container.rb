@@ -32,6 +32,10 @@ module Docker
       self.host_config['RestartPolicy']
     end
 
+    def default_stack?
+      self.labels['io.kontena.stack.name'].to_s == 'default'.freeze
+    end
+
     # @return [Boolean]
     def running?
       self.state['Running']

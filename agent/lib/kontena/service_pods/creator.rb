@@ -1,5 +1,6 @@
 require 'docker'
 require 'celluloid'
+require_relative 'common'
 require_relative '../image_puller'
 require_relative '../logging'
 
@@ -7,6 +8,7 @@ module Kontena
   module ServicePods
     class Creator
       include Kontena::Logging
+      include Common
 
       attr_reader :service_pod, :image_credentials
 
@@ -24,7 +26,7 @@ module Kontena
           data_container = self.ensure_data_container(service_pod)
           service_pod.volumes_from << data_container.id
         end
-        service_container = get_container(service_pod.name)
+        service_container = get_container(service_pod.service_id, service_pod.instance_number)
 
         sleep 1 until Celluloid::Actor[:network_adapter].running?
 
@@ -118,7 +120,7 @@ module Kontena
       # @param [ServicePod] service_pod
       # @return [Container]
       def ensure_data_container(service_pod)
-        data_container = get_container(service_pod.data_volume_name)
+        data_container = get_container(service_pod.service_id, service_pod.instance_number, 'volume')
         unless data_container
           info "creating data volumes for service: #{service_pod.name}"
           data_container = create_container(service_pod.data_volume_config)
@@ -132,11 +134,6 @@ module Kontena
         container.stop
         container.wait
         container.delete(v: true)
-      end
-
-      # @return [Docker::Container, NilClass]
-      def get_container(name)
-        Docker::Container.get(name) rescue nil
       end
 
       # @param [Hash] opts

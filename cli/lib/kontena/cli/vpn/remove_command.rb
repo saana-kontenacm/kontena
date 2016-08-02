@@ -9,10 +9,10 @@ module Kontena::Cli::Vpn
       token = require_token
       confirm unless forced?
 
-      vpn = client(token).get("services/#{current_grid}/vpn") rescue nil
-      abort("VPN service does not exist") if vpn.nil?
+      vpn = client(token).get("stacks/#{current_grid}/vpn") rescue nil
+      abort("VPN stack does not exist") if vpn.nil?
 
-      client(token).delete("services/#{current_grid}/vpn")
+      client(token).delete("stacks/#{current_grid}/vpn")
     end
   end
 end

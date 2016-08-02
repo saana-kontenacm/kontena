@@ -9,10 +9,10 @@ module Kontena::Cli::Registry
       token = require_token
       confirm unless forced?
 
-      registry = client(token).get("services/#{current_grid}/registry") rescue nil
-      abort("Docker Registry service does not exist") if registry.nil?
+      registry = client(token).get("stacks/#{current_grid}/registry") rescue nil
+      abort("Registry service does not exist") if registry.nil?
 
-      client(token).delete("services/#{current_grid}/registry")
+      client(token).delete("stacks/#{current_grid}/registry")
     end
   end
 end

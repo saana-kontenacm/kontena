@@ -3,7 +3,7 @@ require_relative '../../../spec_helper'
 describe Kontena::ServicePods::Terminator do
 
   let(:service_name) { 'service-1' }
-  let(:subject) { described_class.new(service_name) }
+  let(:subject) { described_class.new('service_id', 1) }
 
   describe '#remove_from_load_balancer?' do
     it 'returns false by default' do
@@ -12,7 +12,7 @@ describe Kontena::ServicePods::Terminator do
     end
 
     it 'returns true if load balanced, first instance and options force lb cleanup' do
-      subject = described_class.new(service_name, {'lb' => true})
+      subject = described_class.new('service_id', 1, {'lb' => true})
       service_container = spy(:service_container, :load_balanced? => true, :instance_number => 1)
       expect(subject.remove_from_load_balancer?(service_container)).to be_truthy
     end

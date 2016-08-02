@@ -1,6 +1,10 @@
 module GridServices
   module Common
 
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
     ##
     # @param [Grid] grid
     # @param [Array<Hash>] links
@@ -62,6 +66,111 @@ module GridServices
       end
 
       service_secrets
+    end
+
+    module ClassMethods
+
+      def common_validations
+        optional do
+          string :strategy
+          integer :container_count
+          string :user
+          array :cmd do
+            string
+          end
+          string :entrypoint
+          array :env do
+            string
+          end
+          array :secrets do
+            hash do
+              required do
+                string :secret
+                string :name
+              end
+            end
+          end
+          array :ports do
+            hash do
+              required do
+                string :ip, default: '0.0.0.0'
+                string :protocol, default: 'tcp'
+                integer :node_port
+                integer :container_port
+              end
+            end
+          end
+          array :links do
+            hash do
+              required do
+                string :name
+                string :alias
+              end
+            end
+          end
+          array :affinity do
+            string
+          end
+          hash :deploy_opts do
+            optional do
+              integer :wait_for_port
+              float :min_health
+              integer :interval
+            end
+          end
+          array :volumes do
+            string
+          end
+          array :volumes_from do
+            string
+          end
+          integer :cpu_shares, min: 0, max: 1024
+          integer :memory
+          integer :memory_swap
+          boolean :privileged
+          array :cap_add do
+            string
+          end
+          array :cap_drop do
+            string
+          end
+          string :net, matches: /^(bridge|host|container:.+)$/
+          hash :log_opts do
+            string :*
+          end
+          string :log_driver
+          array :devices do
+            string
+          end
+          string :pid, matches: /^(host)$/
+          hash :hooks do
+            optional do
+              array :post_start do
+                hash do
+                  required do
+                    string :name
+                    string :cmd
+                    string :instances
+                    boolean :oneshot, default: false
+                  end
+                end
+              end
+            end
+          end
+          hash :health_check do
+            required do
+              integer :port
+              string :protocol, matches: /^(http|tcp)$/
+            end
+            optional do
+              string :uri
+              integer :timeout, default: 10
+              integer :interval, default: 60
+              integer :initial_delay, default: 10
+            end
+          end
+        end
+      end
     end
   end
 end

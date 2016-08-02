@@ -7,7 +7,9 @@ describe GridServices::Create do
     grid.users << user
     grid
   }
-  let(:linked_service) { GridService.create(grid: grid, name: 'linked-service', image_name: 'redis:2.8')}
+  let(:linked_service) {
+    GridService.create!(grid: grid, name: 'linked-service', image_name: 'redis:2.8')
+  }
 
   describe '#run' do
     it 'creates a new grid service' do
@@ -291,7 +293,7 @@ describe GridServices::Create do
       ).run
       expect(outcome.result.revision).to eq(1)
     end
-    
+
     it 'saves health_check' do
       outcome = described_class.new(
           current_user: user,
