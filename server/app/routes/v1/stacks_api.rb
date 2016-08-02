@@ -6,6 +6,9 @@ module V1
     include Auditor
 
     plugin :multi_route
+    plugin :streaming
+
+    Dir[File.join(__dir__, '/stacks/*.rb')].each{|f| require f}
 
     route do |r|
       validate_access_token
@@ -90,6 +93,10 @@ module V1
         r.get do
           r.is do
             render('stacks/show')
+          end
+
+          r.on "container_logs" do
+            r.route 'stack_container_logs'
           end
         end
 

@@ -58,10 +58,10 @@ describe '/v1/services' do
       get "/v1/services/#{redis_service.to_path}", nil, request_headers
       expect(response.status).to eq(200)
       expect(json_response.keys.sort).to eq(%w(
-        id created_at updated_at image affinity name stateful user
+        id created_at updated_at stack image affinity name stateful user
         container_count cmd entrypoint ports env memory memory_swap cpu_shares
-        volumes volumes_from cap_add cap_drop state grid_id links log_driver log_opts
-        strategy deploy_opts pid instances net hooks secrets revision
+        volumes volumes_from cap_add cap_drop state grid links log_driver log_opts
+        strategy deploy_opts pid instances net dns hooks secrets revision
       ).sort)
       expect(json_response['id']).to eq(redis_service.to_path)
       expect(json_response['image']).to eq(redis_service.image_name)
@@ -95,7 +95,7 @@ describe '/v1/services' do
       put "/v1/services/#{app_service.to_path}", data.to_json, request_headers
       expect(response.status).to eq(200)
       expect(json_response['links']).to include({
-        'alias' => 'redis', 'grid_service_id' => redis_service.to_path
+        'alias' => 'redis', 'id' => redis_service.to_path, 'name' => redis_service.name
       })
     end
 

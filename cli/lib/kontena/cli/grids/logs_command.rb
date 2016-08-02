@@ -1,6 +1,9 @@
+require_relative '../services/log_helper'
+
 module Kontena::Cli::Grids
   class LogsCommand < Clamp::Command
     include Kontena::Cli::Common
+    include Kontena::Cli::Services::LogHelper
 
     option ["-t", "--tail"], :flag, "Tail (follow) logs", default: false
     option "--lines", "LINES", "Number of lines to show from the end of the logs"
@@ -32,65 +35,38 @@ module Kontena::Cli::Grids
     def list_logs(token, query_params)
       result = client(token).get("grids/#{current_grid}/container_logs", query_params)
       result['logs'].each do |log|
-        color = color_for_container(log['name'])
-        prefix = ""
-        prefix << "#{log['created_at']} "
-        prefix << "#{log['name']}:"
-        prefix = prefix.colorize(color)
-        puts "#{prefix} #{log['data']}"
+        render_log_line(log)
       end
     end
 
-    def stream_logs(token, query_params)
-      streamer = lambda do |chunk, remaining_bytes, total_bytes|
-        begin
-          unless @buffer.empty?
-            chunk = @buffer + chunk
-          end
-          unless chunk.empty?
-            log = JSON.parse(chunk)
-          end
-          @buffer = ''
-        rescue => exc
-          @buffer << chunk
-        end
-        if log
-          @last_seen = log['id']
-          color = color_for_container(log['name'])
-          puts "#{log['name'].colorize(color)} | #{log['data']}"
-        end
+    # @param [Hash] log
+    def render_log_line(log)
+      color = color_for_container(log['container_id'])
+      prefix = ""
+      prefix << "#{log['created_at']} "
+      if log['service']
+        prefix << "[#{log['node']['name']}:#{log['stack']['name']}/#{log['name']}]"
+      else
+        prefix << "[#{log['node']['name']}:#{log['name']}]"
       end
+      prefix << ":"
+      prefix = prefix.colorize(color)
+      puts "#{prefix} #{log['data']}"
+    end
 
+    def stream_logs(token, query_params)
       begin
         if @last_seen
           query_params[:from] = @last_seen
         end
         result = client(token).get_stream(
-          "grids/#{current_grid}/container_logs", streamer, query_params
+          "grids/#{current_grid}/container_logs", log_stream_parser, query_params
         )
       rescue => exc
         if exc.cause.is_a?(EOFError) # Excon wraps the EOFerror into SockerError
           retry
         end
       end
-
-    end
-
-    def color_for_container(container_id)
-      color_maps[container_id] = colors.shift unless color_maps[container_id]
-      color_maps[container_id].to_sym
-    end
-
-    def color_maps
-      @color_maps ||= {}
-    end
-
-    def colors
-      if(@colors.nil? || @colors.size == 0)
-        @colors = [:green, :yellow, :magenta, :cyan, :red,
-          :light_green, :light_yellow, :ligh_magenta, :light_cyan, :light_red]
-      end
-      @colors
     end
   end
 end

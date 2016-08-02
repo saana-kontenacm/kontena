@@ -1,18 +1,15 @@
-require_relative 'services_helper'
-require_relative 'log_helper'
+require_relative '../services/log_helper'
 
-module Kontena::Cli::Services
+module Kontena::Cli::Stacks
   class LogsCommand < Clamp::Command
     include Kontena::Cli::Common
     include Kontena::Cli::GridOptions
-    include ServicesHelper
-    include LogHelper
+    include Kontena::Cli::Services::LogHelper
 
-    parameter "NAME", "Service name"
+    parameter "NAME", "Stack name"
     option ["-t", "--tail"], :flag, "Tail (follow) logs", default: false
     option ["-l", "--lines"], "LINES", "How many lines to show", default: '100'
     option "--since", "SINCE", "Show logs since given timestamp"
-    option ["-i", "--instance"], "INSTANCE", "Show only given instance specific logs"
 
     def execute
       require_api_url
@@ -21,7 +18,6 @@ module Kontena::Cli::Services
       query_params = {}
       query_params[:limit] = lines if lines
       query_params[:since] = since if since
-      query_params[:container] = "#{name}-#{instance}" if instance
 
       if tail?
         @buffer = ''
@@ -34,7 +30,7 @@ module Kontena::Cli::Services
     end
 
     def list_logs(token, query_params)
-      result = client(token).get("services/#{current_grid}/#{name}/container_logs", query_params)
+      result = client(token).get("stacks/#{current_grid}/#{name}/container_logs", query_params)
       result['logs'].each do |log|
         render_log_line(log)
       end
@@ -47,7 +43,7 @@ module Kontena::Cli::Services
           query_params[:from] = @last_seen
         end
         result = client(token).get_stream(
-          "services/#{current_grid}/#{name}/container_logs", log_stream_parser, query_params
+          "stacks/#{current_grid}/#{name}/container_logs", log_stream_parser, query_params
         )
       rescue => exc
         if exc.cause.is_a?(EOFError) # Excon wraps the EOFerror into SockerError
