@@ -22,6 +22,13 @@ module GridServices
       if self.stateful && self.volumes_from && self.volumes_from.size > 0
         add_error(:volumes_from, :invalid, 'Cannot combine stateful & volumes_from')
       end
+      if self.links
+        self.links.each do |link|
+          unless self.grid.grid_services.find_by(name: link[:name])
+            add_error(:links, :not_found, "Service #{link[:name]} does not exist")
+          end
+        end
+      end
       if self.strategy && !self.strategies[self.strategy]
         add_error(:strategy, :invalid_strategy, 'Strategy not supported')
       end
