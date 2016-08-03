@@ -8,6 +8,7 @@ class Stack
 
   belongs_to :grid
 
+  has_many :stack_revisions, dependent: :destroy
   has_many :grid_services
 
   index({ grid_id: 1 })
