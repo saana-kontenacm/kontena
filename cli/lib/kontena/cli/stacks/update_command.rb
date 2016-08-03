@@ -6,7 +6,7 @@ module Kontena::Cli::Stacks
     include Kontena::Cli::GridOptions
     include Common
 
-    parameter "NAME", "Service name"
+    parameter "NAME", "Stack name"
 
     option ['-f', '--file'], 'FILE', 'Specify an alternate Kontena stack file', attribute_name: :filename, default: 'kontena.yml'
 

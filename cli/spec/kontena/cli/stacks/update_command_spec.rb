@@ -6,21 +6,27 @@ describe Kontena::Cli::Stacks::UpdateCommand do
   include ClientHelpers
 
   describe '#execute' do
+
+    let(:stack) do
+      {
+        'name' => 'stack-a',
+        'services' => []
+      }
+    end
+
     it 'requires api url' do
+      allow(subject).to receive(:stack_from_yaml).with('kontena.yml').and_return(stack)
       expect(subject).to receive(:require_api_url).once
       subject.run(['stack-name'])
     end
 
     it 'requires token' do
+      allow(subject).to receive(:stack_from_yaml).with('kontena.yml').and_return(stack)
       expect(subject).to receive(:require_token).and_return(token)
       subject.run(['stack-name'])
     end
 
     it 'sends stack to master' do
-      stack = {
-        'name' => 'stack-a',
-        'services' => []
-      }
       allow(subject).to receive(:require_config_file).with('kontena.yml').and_return(true)
       allow(subject).to receive(:stack_from_yaml).with('kontena.yml').and_return(stack)
       expect(client).to receive(:put).with(
@@ -30,10 +36,6 @@ describe Kontena::Cli::Stacks::UpdateCommand do
     end
 
     it 'allows to override stack name' do
-      stack = {
-        'name' => 'stack-a',
-        'services' => []
-      }
       allow(subject).to receive(:require_config_file).with('kontena.yml').and_return(true)
       allow(subject).to receive(:stack_from_yaml).with('kontena.yml').and_return(stack)
       stack_b = stack

@@ -11,14 +11,14 @@ module Kontena::Cli::Stacks
 
     def execute
       require_api_url
-      require_token
+      token = require_token
       require_config_file(filename)
       stack = stack_from_yaml(filename)
       stack['name'] = name if name
-      create_stack(stack)
+      create_stack(token, stack)
     end
 
-    def create_stack(stack)
+    def create_stack(token, stack)
       client(token).post("grids/#{current_grid}/stacks", stack)
     end
   end

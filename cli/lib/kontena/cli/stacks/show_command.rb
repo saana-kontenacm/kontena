@@ -6,7 +6,7 @@ module Kontena::Cli::Stacks
     include Kontena::Cli::GridOptions
     include Common
 
-    parameter "NAME", "Service name"
+    parameter "NAME", "Stack name"
 
     def execute
       require_api_url
