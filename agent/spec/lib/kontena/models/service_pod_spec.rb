@@ -10,7 +10,8 @@ describe Kontena::Models::ServicePod do
       'deploy_rev' => Time.now.utc.to_s,
       'updated_at' => Time.now.utc.to_s,
       'labels' => {
-        'io.kontena.service.name' => 'redis-cache',
+        'io.kontena.service.name' => 'redis',
+        'io.kontena.stack.name' => 'default',
         'io.kontena.container.overlay_cidr' => '10.81.23.2/19'
       },
       'stateful' => true,
@@ -35,6 +36,8 @@ describe Kontena::Models::ServicePod do
       'volumes' => nil,
       'volumes_from' => nil,
       'net' => 'bridge',
+      'hostname' => 'redis-2',
+      'domainname' => 'default.kontena.local',
       'log_driver' => nil
     }
   end
@@ -255,7 +258,7 @@ describe Kontena::Models::ServicePod do
     end
 
     it 'sets DnsSearch' do
-      expect(host_config['DnsSearch']).to eq(subject.service_config['Domainname'])
+      expect(host_config['DnsSearch']).to include(subject.service_config['Domainname'])
     end
 
     it 'does not include CpuShares if not defined' do

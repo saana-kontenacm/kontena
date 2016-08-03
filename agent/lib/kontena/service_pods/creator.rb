@@ -152,7 +152,7 @@ module Kontena
       # @return [Boolean]
       def service_uptodate?(service_container)
         return false if recreate_service_container?(service_container)
-        return false if service_container.info['Config']['Image'] != service_pod.image_name
+        return false if service_container.config['Image'] != service_pod.image_name
         return false if container_outdated?(service_container)
         return false if image_outdated?(service_pod.image_name, service_container)
 
@@ -163,7 +163,7 @@ module Kontena
       # @return [Boolean]
       def container_outdated?(service_container)
         updated_at = DateTime.parse(service_pod.updated_at)
-        created = DateTime.parse(service_container.info['Created']) rescue nil
+        created = DateTime.parse(service_container.config['Created']) rescue nil
         return true if created.nil?
         return true if created < updated_at
 
@@ -177,8 +177,8 @@ module Kontena
         image = Docker::Image.get(image_name) rescue nil
         return true unless image
 
-        container_created = DateTime.parse(service_container.info['Created']) rescue nil
-        image_created = DateTime.parse(image.info['Created'])
+        container_created = DateTime.parse(service_container.config['Created']) rescue nil
+        image_created = DateTime.parse(image.config['Created'])
         return true if image_created > container_created
 
         false

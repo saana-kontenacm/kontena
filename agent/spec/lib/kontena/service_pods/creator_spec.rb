@@ -76,7 +76,7 @@ describe Kontena::ServicePods::Creator do
     end
 
     it 'returns true if container & image are uptodate' do
-      service_container = spy(:service_container, info: {
+      service_container = spy(:service_container, json: {
         'Created' => (Time.now.utc + 2).to_s,
         'Config' => {
           'Image' => service_pod.image_name
