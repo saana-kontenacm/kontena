@@ -97,7 +97,7 @@ describe '/v1/grids' do
             image: 'wordpress',
             stateful: false,
             name: 'wordpress',
-            links: [{'name' => "#{db_service.name}", 'alias' => 'mysql'}]
+            links: [{'name' => "default/#{db_service.name}", 'alias' => 'mysql'}]
         }
 
         post "/v1/grids/#{grid.to_path}/services", payload.to_json, request_headers

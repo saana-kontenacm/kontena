@@ -30,7 +30,8 @@ describe '/v1/grids/:grid/stacks' do
   describe 'POST' do
     it 'creates new empty stack' do
       expect {
-        post "/v1/grids/#{grid.name}/stacks", {name: 'test-stack'}.to_json, request_headers
+        data = { name: 'test-stack', services: [] }
+        post "/v1/grids/#{grid.name}/stacks", data.to_json, request_headers
         expect(response.status).to eq(201)
         expect(json_response.keys.sort).to eq(%w(
           id created_at updated_at name version services state
@@ -40,12 +41,13 @@ describe '/v1/grids/:grid/stacks' do
 
     it 'creates audit event' do
       expect {
-        post "/v1/grids/#{grid.name}/stacks", {name: 'test-stack'}.to_json, request_headers
+        data = { name: 'test-stack', services: [] }
+        post "/v1/grids/#{grid.name}/stacks", data.to_json, request_headers
         expect(response.status).to eq(201)
       }.to change{ AuditLog.count }.by(1)
     end
 
-    it 'creates new stack with services' do
+    it 'creates new stack' do
       data = {
         name: 'test-stack',
         services: [
@@ -59,8 +61,24 @@ describe '/v1/grids/:grid/stacks' do
       expect {
         post "/v1/grids/#{grid.name}/stacks", data.to_json, request_headers
         expect(response.status).to eq(201)
-        expect(json_response['services'].size).to eq(1)
       }.to change{ grid.reload.stacks.count }.by(1)
+    end
+
+    it 'creates new stack revision' do
+      data = {
+        name: 'test-stack',
+        services: [
+          {
+            name: 'app',
+            image: 'my/app:latest',
+            stateful: false
+          }
+        ]
+      }
+      expect {
+        post "/v1/grids/#{grid.name}/stacks", data.to_json, request_headers
+        expect(response.status).to eq(201)
+      }.to change{ StackRevision.count }.by(1)
     end
 
     it 'return 422 for service validation failure' do
@@ -79,6 +97,5 @@ describe '/v1/grids/:grid/stacks' do
         expect(response.status).to eq(422)
       }.to change{ grid.reload.stacks.count }.by(0)
     end
-
   end
 end

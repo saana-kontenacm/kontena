@@ -25,7 +25,7 @@ module GridServices
         add_error(:volumes_from, :invalid, 'Cannot combine stateful & volumes_from')
       end
       if self.links
-        validate_links(self.grid, self.stack, self.links)
+        validate_links(self.grid, self.links)
       end
       if self.strategy && !self.strategies[self.strategy]
         add_error(:strategy, :invalid_strategy, 'Strategy not supported')
