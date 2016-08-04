@@ -197,7 +197,7 @@ describe GridServices::Create do
 
     it 'saves links' do
       links = [
-        {name: linked_service.name, alias: 'link-alias'}
+        {name: "#{linked_service.stack.name}/#{linked_service.name}", alias: 'link-alias'}
       ]
       outcome = described_class.new(
           current_user: user,

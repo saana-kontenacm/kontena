@@ -5,6 +5,17 @@ module GridServices
       base.extend(ClassMethods)
     end
 
+    # @param [Grid] grid
+    # @param [Hash] link
+    # @return [Array<Stack,String>]
+    def parse_link(grid, link)
+      link_parts = link[:name].split('/')
+      service_name = link_parts[-1]
+      stack_name = link_parts[-2]
+      linked_stack = grid.stacks.find_by(name: stack_name)
+      [linked_stack, service_name]
+    end
+
     ##
     # @param [Grid] grid
     # @param [Array<Hash>] links
@@ -12,7 +23,10 @@ module GridServices
     def build_grid_service_links(grid, links)
       grid_service_links = []
       links.each do |link|
-        linked_service = grid.grid_services.find_by(name: link[:name])
+        linked_stack, service_name = parse_link(grid, link)
+        next if linked_stack.nil?
+
+        linked_service = linked_stack.grid_services.find_by(name: service_name)
         if linked_service
           grid_service_links << GridServiceLink.new(
               linked_grid_service: linked_service,
@@ -66,6 +80,20 @@ module GridServices
       end
 
       service_secrets
+    end
+
+    # @param [Grid] grid
+    # @param [Array<Hash>] links
+    def validate_links(grid, links)
+      links.each do |link|
+        linked_stack, service_name = parse_link(grid, link)
+        if linked_stack.nil?
+          add_error(:links, :not_found, "Link #{link[:name]} points to non-existing stack")
+        end
+        unless linked_stack.grid_services.find_by(name: service_name)
+          add_error(:links, :not_found, "Service #{link[:name]} does not exist")
+        end
+      end
     end
 
     module ClassMethods

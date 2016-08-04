@@ -161,6 +161,31 @@ describe GridService do
     end
   end
 
+  describe '#linked_from_services' do
+    it 'returns Mongoid::Criteria' do
+      expect(grid_service.linked_from_services).to be_instance_of(Mongoid::Criteria)
+    end
+
+    it 'returns services that service has been linked from' do
+      a = GridService.create!(
+        grid: grid, name: 'aaa', image_name: 'aaa:latest',
+        grid_service_links: [
+          GridServiceLink.new(linked_grid_service_id: grid_service.id, alias: 'foo')
+        ]
+      )
+      b = GridService.create!(
+        grid: grid, name: 'bbb', image_name: 'bbb:latest',
+        grid_service_links: [
+          GridServiceLink.new(linked_grid_service_id: a.id, alias: 'a-foo')
+        ]
+      )
+      expect(grid_service.linked_from_services.count).to eq(1)
+      expect(grid_service.linked_from_services.first.id).to eq(a.id)
+      expect(a.linked_from_services.count).to eq(1)
+      expect(a.linked_from_services.first.id).to eq(b.id)
+    end
+  end
+
   describe '#load_balancer?' do
     it 'returns true if official kontena/lb image' do
       subject.image_name = 'kontena/lb:latest'

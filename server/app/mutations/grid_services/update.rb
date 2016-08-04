@@ -17,11 +17,7 @@ module GridServices
 
     def validate
       if self.links
-        self.links.each do |link|
-          unless self.grid_service.grid.grid_services.find_by(name: link[:name])
-            add_error(:links, :not_found, "Service #{link[:name]} does not exist")
-          end
-        end
+        validate_links(self.grid_service.grid, self.links)
       end
 
       if self.strategy && !self.strategies[self.strategy]
@@ -56,7 +52,9 @@ module GridServices
       attributes[:health_check] = self.health_check if self.health_check
 
       if self.links
-        attributes[:grid_service_links] = build_grid_service_links(self.grid_service.grid, self.links)
+        attributes[:grid_service_links] = build_grid_service_links(
+          self.grid_service.grid, self.links
+        )
       end
 
       if self.hooks

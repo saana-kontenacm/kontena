@@ -19,15 +19,13 @@ module GridServices
     end
 
     def validate
+      self.stack = self.grid.stacks.find_by(name: 'default') unless self.stack
+
       if self.stateful && self.volumes_from && self.volumes_from.size > 0
         add_error(:volumes_from, :invalid, 'Cannot combine stateful & volumes_from')
       end
       if self.links
-        self.links.each do |link|
-          unless self.grid.grid_services.find_by(name: link[:name])
-            add_error(:links, :not_found, "Service #{link[:name]} does not exist")
-          end
-        end
+        validate_links(self.grid, self.stack, self.links)
       end
       if self.strategy && !self.strategies[self.strategy]
         add_error(:strategy, :invalid_strategy, 'Strategy not supported')

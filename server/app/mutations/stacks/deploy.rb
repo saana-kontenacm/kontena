@@ -17,6 +17,9 @@ module Stacks
           add_error(:service, :deploy, outcome.errors.message)
         end
       end
+      if self.stack.stack_revisions.count == 0
+        add_error(:stack, :invalid, 'Stack does not have any deployable revisions')
+      end
     end
 
     def execute

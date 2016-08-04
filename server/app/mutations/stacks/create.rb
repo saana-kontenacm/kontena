@@ -8,11 +8,8 @@ module Stacks
       model :current_user, class: User
       model :grid, class: Grid
       string :name, matches: /^(?!-)(\w|-)+$/ # do not allow "-" as a first character
-    end
-
-    optional do
       array :services do
-        model :foo, class: Hash
+        model :object, class: Hash
       end
     end
 
@@ -21,16 +18,14 @@ module Stacks
         add_error(:name, :exists, "#{name} already exists")
         return
       end
-      if self.services
-        sort_services(self.services).each do |s|
-          service = s.dup
-          service.delete(:links)
-          service[:current_user] = self.current_user
-          service[:grid] = self.grid
-          outcome = GridServices::Create.validate(service)
-          unless outcome.success?
-            handle_service_outcome_errors(service[:name], outcome.errors.message, :create)
-          end
+      sort_services(self.services).each do |s|
+        service = s.dup
+        service.delete(:links)
+        service[:current_user] = self.current_user
+        service[:grid] = self.grid
+        outcome = GridServices::Create.validate(service)
+        unless outcome.success?
+          handle_service_outcome_errors(service[:name], outcome.errors.message, :create)
         end
       end
     end
