@@ -35,9 +35,5 @@ json.service_rev container.service_rev
 json.image container.image
 json.env container.env
 json.volumes container.volumes
-if container.overlay_cidr
-  json.overlay_cidr container.overlay_cidr.to_s
-else
-  json.overlay_cidr nil
-end
+json.ip_address container.ip_address
 json.network_settings container.network_settings

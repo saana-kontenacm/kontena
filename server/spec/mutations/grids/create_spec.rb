@@ -33,16 +33,6 @@ describe Grids::Create do
         }.to change{ Grid.count }.by(1)
       end
 
-      it 'initializes subnet' do
-        outcome = described_class.new(
-            user: user,
-            name: nil
-        ).run
-        sleep 0.1
-        grid = outcome.result
-        expect(grid.overlay_cidrs.count > 0).to be_truthy
-      end
-
       context 'when name is provided' do
         it 'does not generate random name ' do
           subject = described_class.new(
