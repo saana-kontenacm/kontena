@@ -217,6 +217,10 @@ module Kontena::NetworkAdapters
       Celluloid::Notifications.publish('network_adapter:start', info)
     end
 
+    def detach_network(container)
+      self.exec(['--local', 'detach', container.id])
+    end
+
     private
 
     def ensure_kontena_network
@@ -227,6 +231,13 @@ module Kontena::NetworkAdapters
           'Driver': 'weavemesh',
           'IPAM': {
             'Driver': 'kontena-ipam',
+            'Config': [
+              {
+                # Need to set the subnet for the default network so we can
+                # later migrate container to it with manually set IP's
+                'Subnet': '10.81.0.0/16'
+              }
+            ],
             'Options': {
               'network': 'kontena'
             }
