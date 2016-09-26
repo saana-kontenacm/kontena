@@ -14,7 +14,8 @@ module Kontena::Cli::Apps
     option ['-p', '--project-name'], 'NAME', 'Specify an alternate project name (default: directory name)'
     option '--async', :flag, 'Run deploys async/parallel'
     option '--force-deploy', :flag, 'Force deploy even if service does not have any changes'
-
+    option '--skip-validation', :flag, 'Skip YAML file validation', default: false
+    
     parameter "[SERVICE] ...", "Services to start"
 
     attr_reader :services, :deploy_queue
