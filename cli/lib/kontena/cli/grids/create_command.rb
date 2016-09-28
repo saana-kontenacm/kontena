@@ -16,7 +16,7 @@ module Kontena::Cli::Grids
       payload = {
         name: name
       }
-      payload[:token] = grid_token if grid_token
+      payload[:token] = token if token
       payload[:initial_size] = initial_size if initial_size
       grid = client(token).post('grids', payload)
       if grid
