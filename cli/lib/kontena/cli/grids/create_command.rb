@@ -7,7 +7,7 @@ module Kontena::Cli::Grids
 
     parameter "NAME", "Grid name"
     option "--initial-size", "INITIAL_SIZE", "Initial grid size (number of nodes)", default: 1
-    option "--grid-token", "[TOKEN]", "Set grid token"
+    option "--token", "[TOKEN]", "Set grid token"
 
     def execute
       require_api_url
