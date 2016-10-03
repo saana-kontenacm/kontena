@@ -16,10 +16,17 @@ module Kontena::Cli::Grids
         name: name
       }
       payload[:initial_size] = initial_size if initial_size
-      grid = client(token).post('grids', payload)
+      grid = nil
+      if initial_size == 1
+        STDERR.puts "WARNING: --initial-size=1 is only recommended for test/dev usage".colorize(:yellow)
+      end
+      ShellSpinner "creating #{name.colorize(:cyan)} grid " do
+        grid = client(token).post('grids', payload)
+      end
       if grid
-        self.current_grid = grid
-        puts "Using grid: #{grid['name'].cyan}"
+        ShellSpinner "switching scope to #{name.colorize(:cyan)} grid " do
+          self.current_grid = grid
+        end
       end
     end
   end
